@@ -1,0 +1,23 @@
+type Owner @entity {
+	id: ID! # owner address
+	ownedTokens: [Token!]! @derivedFrom(field: "owner")
+}
+
+type Token @entity {
+	id: ID! # mint
+	tokenId: String!
+	owner: Owner!
+	transfers: [Transfer!]! @derivedFrom(field: "token")
+}
+
+type Transfer @entity {
+	id: ID! #the unique transaction hash of the
+	token: Token! #id of the nft being transferred
+	from: Owner!
+	to: Owner!
+	amount: BigInt!
+	timestamp: DateTime!
+	slot: Int!
+	blockNumber: Int!
+	signature: String!
+}
