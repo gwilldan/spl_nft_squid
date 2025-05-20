@@ -3,7 +3,6 @@ import { augmentBlock } from "@subsquid/solana-objects";
 import { TypeormDatabase } from "@subsquid/typeorm-store";
 import * as tokenProgram from "./abi/token-program";
 import { Transfer, Owner, Token } from "./model/generated";
-import { mint } from "./constants";
 import { dataSource } from "./datasource";
 import bs58 from "bs58";
 import { getAssets } from "./metaplex";
@@ -25,7 +24,7 @@ interface RawTransfer {
 }
 
 run(dataSource, database, async (ctx) => {
-	const assets = await getAssets("");
+	const assets = await getAssets(rpcURL);
 	let blocks = ctx.blocks.map(augmentBlock);
 
 	let rawTransfers: RawTransfer[] = [];
