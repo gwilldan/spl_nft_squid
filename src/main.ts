@@ -6,6 +6,7 @@ import { Transfer, Owner, Token } from "./model/generated";
 import { dataSource } from "./datasource";
 import bs58 from "bs58";
 import { getAssets } from "./metaplex";
+import { DasApiAssetList } from "@metaplex-foundation/digital-asset-standard-api";
 
 const rpcURL = "https://api.mainnet-beta.solana.com";
 
@@ -23,8 +24,14 @@ interface RawTransfer {
 	signature: string;
 }
 
+let assets: DasApiAssetList | null = null;
+
 run(dataSource, database, async (ctx) => {
-	const assets = await getAssets(rpcURL);
+
+	if (assets === null) {
+		assets = await getAssets(rpcURL)
+	}
+
 	let blocks = ctx.blocks.map(augmentBlock);
 
 	let rawTransfers: RawTransfer[] = [];
@@ -79,11 +86,9 @@ run(dataSource, database, async (ctx) => {
 	const tokens: Map<string, Token> = createTokens(rawTransfers, owners);
 	const transfers: Transfer[] = createTransfers(rawTransfers, owners, tokens);
 
-	await Promise.all([
-		ctx.store.upsert([...owners.values()]),
-		ctx.store.upsert([...tokens.values()]),
-		ctx.store.insert(transfers),
-	]);
+	await ctx.store.upsert([...owners.values()]);
+	await ctx.store.upsert([...tokens.values()]);
+	await ctx.store.insert(transfers);
 });
 
 function createOwners(rawTransfers: RawTransfer[]): Map<string, Owner> {
