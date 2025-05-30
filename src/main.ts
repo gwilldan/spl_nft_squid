@@ -141,19 +141,25 @@ function createTransfers(
 
 function decodeSplTransferAmountFromBase58(dataBase58: string): bigint {
 	const data = bs58.decode(dataBase58);
-
+  
 	if (data[0] !== 3) {
-		throw new Error("Not a SPL Token Transfer instruction");
+	  throw new Error("Not a SPL Token Transfer instruction");
 	}
-
+  
 	if (data.length < 9) {
-		throw new Error("Invalid instruction data length");
+	  throw new Error("Invalid instruction data length");
 	}
-
-	const amountBytes = data.slice(1, 9);
-	const amount = BigInt(
-		amountBytes.reduce((acc, byte, i) => acc + (byte << (8 * i)), 0)
-	);
-
+  
+	// Little-endian 64-bit unsigned integer
+	const amountBytes = data.slice(1, 9); 
+  
+	// Convert little-endian bytes to hex string (reversed order)
+	const hex = [...amountBytes]
+	  .reverse()
+	  .map((byte) => byte.toString(16).padStart(2, "0"))
+	  .join("");
+  
+	const amount = BigInt("0x" + hex);
+  
 	return amount;
-}
+  }
